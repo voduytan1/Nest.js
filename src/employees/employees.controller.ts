@@ -8,21 +8,27 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  Ip,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { Prisma } from '@prisma/client';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Controller('employees')
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
-
+  private readonly logger = new MyLoggerService(EmployeesController.name);
   @Post()
   create(@Body() createEmployeeDto: Prisma.EmployeeCreateInput) {
     return this.employeesService.create(createEmployeeDto);
   }
 
   @Get()
-  findAll(@Query('role') role?: 'INTERN' | 'ADMIN' | 'ENGINEER') {
+  findAll(
+    @Ip() ip: string,
+    @Query('role') role?: 'INTERN' | 'ADMIN' | 'ENGINEER',
+  ) {
+    this.logger.log(`Request for all employees from\t${ip}`);
     return this.employeesService.findAll(role);
   }
 
