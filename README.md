@@ -1,98 +1,89 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# So sánh giữa NestJS và Express
+## Cấu trúc và tổ chức mã nguồn
+- Express: Không áp đặt cấu trúc, nhà phát triển tự quyết định tổ chức
+- NestJS: Áp đặt cấu trúc rõ ràng với controllers, providers, modules
+## TypeScript
+- Express: cần phải tự cấu hình thêm để dùng typescript
+- NestJS: Được xây dựng với TypeScript từ đầu, tận dụng tối đa các tính năng của TypeScript
+## Dependency Injection
+- Express: Không có sẵn, cần thư viện bên thứ ba
+- NestJS: Có hệ thống DI mạnh mẽ tích hợp sẵn
+##  Middleware và xử lý request
+- Express: Hệ thống middleware đơn giản
+- NestJS: Mở rộng middleware và thêm Guards, Interceptors, Pipes, Exception filters
+## Khả năng mở rộng và bảo trì
+- Express: đơn giản và linh hoạt, nhưng có thể dẫn đến mã nguồn khó bảo trì trong các dự án lớn nếu không có cấu trúc rõ ràng.
+- NestJS cung cấp cấu trúc và quy ước giúp các dự án lớn dễ bảo trì và mở rộng. 
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Sự khác nhau giữa provider và Controller?
+## Chức năng chính: 
+- Provider: Xử lý logic nghiệp vụ, ương tác với cơ sở dữ liệu, thực hiện các tác vụ phức tạp.
+- Controller: Xử lý HTTP request, định tuyến, và trả về response
+## Trách nhiệm:
+- Provider: "Cung cấp" các dịch vụ và chức năng
+- Controller: "Điều khiển" luồng request và response
+## Vị trí trong kiến trúc:
+- Provider: Lớp trung gian hoặc lớp trong, không tiếp xúc trực tiếp với client
+- Controller: Lớp ngoài cùng, tiếp xúc trực tiếp với client
 
-## Description
+** Tóm lại Controller có trách nhiệm như "Người bồi bàn". Còn Provider giống như "Người đầu bếp" **
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+# Dependency Injection là gì và làm backend có cần thiết phải có không hay Nestjs đang dư thừa?
+## Dependency Injection là gì?
+- Dependency Injection (Tiêm phụ thuộc) là một mẫu thiết kế (design pattern) trong lập trình, được sử dụng để quản lý các phụ thuộc (dependencies) giữa các thành phần trong ứng dụng. Thay vì một lớp tự tạo ra các đối tượng mà nó cần (dependencies), những đối tượng này sẽ được "tiêm" vào lớp đó từ bên ngoài vào
+- ví dụ: 
 
-## Project setup
+`// Không sử dụng DI`
+`class UserService {`
+`  private database = new Database(); // Tự tạo dependency`
+  
+`  getUsers() {`
+`    return this.database.query('SELECT * FROM users');`
+`  }`
+`}`
 
-```bash
-$ npm install
-```
+`// Sử dụng DI`
+`class UserService {`
+`  constructor(private database: Database) {} // Nhận dependency từ bên ngoài`
+  
+`  getUsers() {`
+`    return this.database.query('SELECT * FROM users');`
+`  }`
+`}`
 
-## Compile and run the project
+## Giả sử khi không dùng DI
+- Khi ta muốn kiểm thử một class, nó sẽ trực tiếp tạo ra một đối tượng thực trong database dẫn đến việc kiểm thử sẽ chậm, khó tạo ra các tình huống đặc biệt như lỗi ...,
+- Điều trên dẫn đến việc liên quan đến nhiều thành phần khác nên nó không thực sự là một unit test.
 
-```bash
-# development
-$ npm run start
+** Nếu khi dùng DI, ta có thể kiểm thử với mockData, song NestJs cũng có các công cụ hỗ trợ chúng ta thực hiện kiểm thử dễ dàng"
 
-# watch mode
-$ npm run start:dev
+## Tóm lại 
+Dependency Injection giúp dễ dàng kiểm thử vì nó cho phép:
+- Cô lập thành phần cần test khỏi các dependency
+- Kiểm soát đầu vào/đầu ra của các dependency
+- Giả lập các tình huống khó tạo ra với dependency thật
+- Tạo test nhanh, ổn định và đáng tin cậy
 
-# production mode
-$ npm run start:prod
-```
+# Middlewares trong Nextjs khác gì Guards, Interceptors, Pipes, Exception filters?
+- Các phần đã nêu trong câu hỏi trên đều có vai trò, thời điểm thực thi riêng khi xử lý các request/response.
+## Đầu tiên về thứ tự thực thi
+Request → Middleware → Guards → Interceptors (trước) → Pipes → Controller → Interceptors (sau) → Response
 
-## Run tests
+Nếu có exception: → Exception Filters → Response
 
-```bash
-# unit tests
-$ npm run test
+Ví dụ cho dễ hiểu:
+- Middlewares: Nhân viên tiếp tân/bảo vệ kiểm tra, lấy thông tin cơ bản của khách hàng
+- Guards: Nhân viên kiểm tra đặt bàn/thẻ thành viên (quyết định có cho vào hay không)
+- Interceptors: Quản lý nhà hàng theo dõi trải nghiệm, ghi lại thời gian phục vụ
+- Pipes: Bếp trưởng kiểm tra nguyên liệu, yêu cầu đặc biệt của khách
+- Controller: Đầu bếp nấu món theo yêu cầu
+- Exception Filters: Nhân viên xử lý/Quản lý cửa hàng khiếu nại khi có sự cố
 
-# e2e tests
-$ npm run test:e2e
+## Khả năng tích hợp với Dependency Injection
+- Middlewares có khả năng tích DI hạn chế
+- Ngược lại các thành phần khác lại có thể tích hợp đầy đủ với hệ thống DI của NestJS
 
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Khả năng truy cập context
+- Middlewares trong NextJs được kế thừa từ Express.js nên có khả năng truy cập rất hạn chế (chỉ truy cập được 3 tham số req, res, next )
+- Ngược lại các thành phần khác đều có quyền truy cập đến ExecutionContext - một lớp trừu tượng cung cấp truy cập đầy đủ về ngữ cảnh của request. Như vậy các thành phần này sẽ biết được thêm ( route nào sẽ xử lý request, truy cập  truy cập metadata từ decorators ...)
